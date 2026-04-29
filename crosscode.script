@@ -1,8 +1,47 @@
-fun refresh_callback() {
+display_mode = "normal";
+fun set_display_mode(new_mode) {
+    if (display_mode != new_mode) {
+        display_mode = new_mode;
+        log("display_mode:"+display_mode);
+    }
+}
+animation_frame = 0;
+fps = 60;
+Plymouth.SetRefreshRate(fps);
+
+last_loading_tile_index = -1;
+
+// debug
+bootprogressmsg.sprite = Sprite();
+bootlogmsg.sprite = Sprite();
+logstr = "";
+fun log(str) {
+    logstr += str + ",";
+
+    progress.image1 = Image.Text(
+        "Log: " + logstr,
+        1, 1, 1, 1, "droidsansmono", "left");
+    bootlogmsg.sprite.SetImage(progress.image1);
+    bootlogmsg.sprite.SetX(10);
+    bootlogmsg.sprite.SetY(10);
+    bootlogmsg.sprite.SetOpacity(1.0);
+
+    if (logstr.Length() > 200) {
+        logstr = "";
+    }
+}
+fun display_debug_on_progress(duration) {
+    progress.image = Image.Text(
+        "Time: " + duration + "\n" +
+        "Progress: " + prog + "\n",
+        1, 1, 1, 1, "droidsansmono", "left");
+    bootprogressmsg.sprite.SetImage(progress.image);
+    bootprogressmsg.sprite.SetX(10);
+    bootprogressmsg.sprite.SetY(100);
+    bootprogressmsg.sprite.SetOpacity(1.0);
 }
 
-status = "normal";
-
+// dialog
 fun dialog_setup() {
     local.box;
     local.lock;
@@ -38,7 +77,6 @@ fun dialog_setup() {
 
     global.dialog.bullet_image = Image("bullet.png");
 }
-
 fun dialog_opacity(opacity) {
     if (!global.dialog) {
         if (opacity == 0)
@@ -54,58 +92,7 @@ fun dialog_opacity(opacity) {
         dialog.bullet[index].sprite.SetOpacity(opacity);
     }
 }
-
-
-fun progress_setup() {
-    bar_width = Window.GetWidth() * 0.6;
-    bar_height = 8 * 5;
-
-    local.box;
-    local.bar;
-
-    box.image = Image("box.png").Scale(bar_width, bar_height);
-    bar.original_image = Image("bar.png").Scale(bar_width - 20, bar_height - 20);
-
-    box.sprite = Sprite(box.image);
-    bar.sprite = Sprite();
-
-    box.x = Window.GetWidth()  / 2 - box.image.GetWidth()  / 2;
-    box.y = Window.GetHeight() / 2 - 4 * 5;
-
-    bar.x = box.x + 10;
-    bar.y = box.y + 10;
-
-    box.sprite.SetPosition(box.x, box.y, 0);
-    bar.sprite.SetPosition(bar.x, bar.y, 1);
-
-    global.progress_box = box;
-    global.progress_bar = bar;
-}
-
-fun progress_opacity(opacity) {
-    if (!progress) {
-        if (opacity == 0)
-            return;
-
-        progress_setup();
-    }
-
-    progress_box.sprite.SetOpacity(opacity);
-    progress_bar.sprite.SetOpacity(opacity);
-}
-
-
-fun display_normal_callback() {
-    global.status = "normal";
-    dialog_opacity(0);
-    progress_opacity(1);
-}
-
-fun display_password_callback(prompt, bullets) {
-    global.status = "password";
-    progress_opacity(0);
-    dialog_opacity(1);
-
+fun dialog_password_callback(prompt, bullets) {
     for (index = 0; dialog.bullet[index] || index < bullets; index++) {
         if (!dialog.bullet[index]) {
             dialog.bullet[index].sprite = Sprite(dialog.bullet_image);
@@ -121,23 +108,181 @@ fun display_password_callback(prompt, bullets) {
     }
 }
 
-fun progress_callback(duration, prog) {
-    progress_opacity(1);
-    return;
-    if (!progress_bar.image || progress_bar.image.GetWidth () != Math.Int (progress_bar.original_image.GetWidth () * prog)) {
-        progress_bar.image = progress_bar.original_image.Scale(
-            progress_bar.original_image.GetWidth() * prog,
-            progress_bar.original_image.GetHeight()
-          );
-        progress_bar.sprite.SetImage(progress_bar.image);
+// progress bar
+fun get_bar1_prog() {
+    if (prog >= bar2_threshold)
+        return 1;
+    return prog / bar2_threshold;
+}
+fun get_bar2_prog() {
+    if (prog < bar2_threshold)
+        return 0;
+    return (prog - bar2_threshold) / (1.0 - bar2_threshold);
+}
+
+fun progress_bar_setup() {
+    w = Window.GetWidth() * 0.6;
+    h = 8 * 5;
+
+    progress_box.image = Image("progress_box.png").Scale(w, h);
+    progress_bar1.original_image = Image("progress_bar1.png").Scale(w - 20, h - 20);
+    progress_bar2.original_image = Image("progress_bar2.png").Scale(w - 20, h - 20);
+
+    progress_box.sprite = Sprite(progress_box.image);
+    progress_bar1.sprite = Sprite();
+    progress_bar2.sprite = Sprite();
+
+    x = Window.GetWidth()/2 - progress_box.image.GetWidth()/2;
+    y = Window.GetHeight()/2 - 4*5;
+    progress_box.x = x;
+    progress_box.y = y;
+
+    barx = x + 10;
+    bary = y + 10;
+    progress_bar1.x = barx;
+    progress_bar1.y = bary;
+    progress_bar2.x = barx;
+    progress_bar2.y = bary;
+
+    progress_box.sprite.SetPosition(x, y, 0);
+    progress_bar1.sprite.SetPosition(barx, bary);
+    progress_bar2.sprite.SetPosition(barx, bary);
+
+    global.progress_box = progress_box;
+    global.progress_bar1 = progress_bar1;
+    global.progress_bar2 = progress_bar2;
+}
+fun progress_bar_opacity(opacity) {
+    if (!global.progress_box) {
+        if (opacity == 0 || prog < threshold)
+            return;
+
+        progress_bar_setup();
+    }
+
+    progress_box.sprite.SetOpacity(opacity);
+    progress_bar1.sprite.SetOpacity(opacity);
+    if (get_bar2_prog() > 0) {
+        progress_bar2.sprite.SetOpacity(opacity);
+    } else {
+        progress_bar2.sprite.SetOpacity(0);
     }
 }
 
+fun progress_bar_on_progress(p) {
+    if (prog < threshold || Plymouth.GetMode() != "boot") {
+        progress_bar_opacity(0.0);
+        return;
+    }
+    progress_bar_opacity(1.0);
+
+    bar1_fill = get_bar1_prog();
+    bar2_fill = get_bar2_prog();
+
+    newW1 = Math.Int(progress_bar1.original_image.GetWidth() * bar1_fill);
+    newW2 = Math.Int(progress_bar2.original_image.GetWidth() * bar2_fill);
+
+    if (!progress_bar1.image || progress_bar1.image.GetWidth () != newW1) {
+        progress_bar1.image = progress_bar1.original_image.Scale(
+            newW1,
+            progress_bar1.original_image.GetHeight()
+          );
+        progress_bar1.sprite.SetImage(progress_bar1.image);
+    }
+
+    if (!progress_bar2.image || progress_bar2.image.GetWidth () != newW2) {
+        progress_bar2.image = progress_bar2.original_image.Scale(
+            newW2,
+            progress_bar2.original_image.GetHeight()
+          );
+        progress_bar2.sprite.SetImage(progress_bar2.image);
+    }
+}
+
+// loading tile
+fun loading_tile_setup() {
+    cw = 568;
+    ch = 320;
+    is = 48;
+    scale = Window.GetWidth() / cw;
+    for (i = 0; i < 16; i++) {
+        global.loading_tiles[i] =
+            Image("loadingTiles/loadingTile" + i + ".png")
+            .Scale(is*scale, is*scale);
+    }
+    global.loading_tile = Sprite();
+    loading_tile.SetX(Window.GetWidth() * (cw - 56)/cw);
+    loading_tile.SetY(Window.GetHeight() * (ch - 56)/ch);
+    loading_tile.SetZ(10000);
+
+}
+fun update_loading_tile() {
+    if (!global.loading_tile) 
+        return;
+
+    index = Math.Int(animation_frame / fps / 0.05) % 16;
+    if (last_loading_tile_index != index) {
+        last_loading_tile_index = index;
+        loading_tile.SetImage(loading_tiles[index]);
+    }
+}
+fun loading_tile_opacity(opacity) {
+    if (!global.loading_tile) {
+        if (opacity == 0)
+            return;
+
+        loading_tile_setup();
+    }
+
+    loadingTile.SetOpacity(opacity);
+}
+
+fun update_visibility() {
+    mode = Plymouth.GetMode();
+    log("mode:" + mode);
+    if (mode == "boot") {
+        if (display_mode == "password")
+            dialog_opacity(1.0);
+        else
+            dialog_opacity(0.0);
+
+        progress_bar_opacity(1.0);
+        loading_tile_opacity(0.0);
+    } else if (mode == "shutdown" || mode == "reboot") {
+        dialog_opacity(0.0);
+        progress_bar_opacity(0.0);
+        loading_tile_opacity(1.0);
+    }
+}
+
+// callbacks
+fun display_normal_callback() {
+    set_display_mode("normal");
+    update_visibility();
+}
+fun display_password_callback(prompt, bullets) {
+    set_display_mode("password");
+    update_visibility();
+    dialog_password_callback(prompt, bullets);
+}
+fun progress_callback(duration, p) {
+    prog = p;
+
+    display_debug_on_progress(duration);
+    progress_bar_on_progress(p);
+}
+fun refresh_callback() {
+    animation_frame++;
+    update_loading_tile();
+}
 fun quit_callback() {
 }
 
-Plymouth.SetRefreshFunction(refresh_callback);
+update_visibility();
 Plymouth.SetDisplayNormalFunction(display_normal_callback);
 Plymouth.SetDisplayPasswordFunction(display_password_callback);
 Plymouth.SetBootProgressFunction(progress_callback);
+Plymouth.SetRefreshFunction(refresh_callback);
 Plymouth.SetQuitFunction(quit_callback);
+
+// vim: set shiftwidth=4 ft=c:

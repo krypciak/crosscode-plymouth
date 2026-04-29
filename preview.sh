@@ -7,14 +7,15 @@ G='\033[1;32m'
 duration=$1
 
 if [ $# -ne 1 ]; then
-	duration=100
+	duration=300
 fi
 
 plymouthd --debug
 plymouth --show-splash
-# plymouth ask-for-password
+# plymouth change-mode --reboot
+plymouth ask-for-password
 for ((I=0; I<$duration; I++)); do 
-  plymouth system-update --progress=$I
+  # plymouth system-update --progress=$I
   sleep 0.01
 done
 plymouth quit
