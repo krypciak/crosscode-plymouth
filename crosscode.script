@@ -1,0 +1,143 @@
+fun refresh_callback() {
+}
+
+status = "normal";
+
+fun dialog_setup() {
+    local.box;
+    local.lock;
+    local.entry;
+
+    box.image = Image("box.png");
+    lock.image = Image("lock.png");
+    entry.image = Image("entry.png");
+
+    box.sprite = Sprite(box.image);
+    lock.sprite = Sprite(lock.image);
+    entry.sprite = Sprite(entry.image);
+
+    box.x = Window.GetWidth()/2 - box.image.GetWidth()/2;
+    box.y = Window.GetHeight()/2 - box.image.GetHeight()/2;
+    box.z = 10000;
+
+    lock.x = box.x + box.image.GetWidth()/2 - (lock.image.GetWidth() + entry.image.GetWidth())/2;
+    lock.y = box.y + box.image.GetHeight()/2 - lock.image.GetHeight()/2;
+    lock.z = box.z + 1;
+
+    entry.x = lock.x + lock.image.GetWidth();
+    entry.y = box.y + box.image.GetHeight()/2 - entry.image.GetHeight()/2;
+    entry.z = box.z + 1;
+
+    box.sprite.SetPosition(box.x, box.y, box.z);
+    lock.sprite.SetPosition(lock.x, lock.y, lock.z);
+    entry.sprite.SetPosition(entry.x, entry.y, entry.z);
+
+    global.dialog.box = box;
+    global.dialog.lock = lock;
+    global.dialog.entry = entry;
+
+    global.dialog.bullet_image = Image("bullet.png");
+}
+
+fun dialog_opacity(opacity) {
+    if (!global.dialog) {
+        if (opacity == 0)
+            return;
+
+        dialog_setup();
+    }
+
+    dialog.box.sprite.SetOpacity(opacity);
+    dialog.lock.sprite.SetOpacity(opacity);
+    dialog.entry.sprite.SetOpacity(opacity);
+    for (index = 0; dialog.bullet[index]; index++) {
+        dialog.bullet[index].sprite.SetOpacity(opacity);
+    }
+}
+
+
+fun progress_setup() {
+    bar_width = Window.GetWidth() * 0.6;
+    bar_height = 8 * 5;
+
+    local.box;
+    local.bar;
+
+    box.image = Image("box.png").Scale(bar_width, bar_height);
+    bar.original_image = Image("bar.png").Scale(bar_width - 20, bar_height - 20);
+
+    box.sprite = Sprite(box.image);
+    bar.sprite = Sprite();
+
+    box.x = Window.GetWidth()  / 2 - box.image.GetWidth()  / 2;
+    box.y = Window.GetHeight() / 2 - 4 * 5;
+
+    bar.x = box.x + 10;
+    bar.y = box.y + 10;
+
+    box.sprite.SetPosition(box.x, box.y, 0);
+    bar.sprite.SetPosition(bar.x, bar.y, 1);
+
+    global.progress_box = box;
+    global.progress_bar = bar;
+}
+
+fun progress_opacity(opacity) {
+    if (!progress) {
+        if (opacity == 0)
+            return;
+
+        progress_setup();
+    }
+
+    progress_box.sprite.SetOpacity(opacity);
+    progress_bar.sprite.SetOpacity(opacity);
+}
+
+
+fun display_normal_callback() {
+    global.status = "normal";
+    dialog_opacity(0);
+    progress_opacity(1);
+}
+
+fun display_password_callback(prompt, bullets) {
+    global.status = "password";
+    progress_opacity(0);
+    dialog_opacity(1);
+
+    for (index = 0; dialog.bullet[index] || index < bullets; index++) {
+        if (!dialog.bullet[index]) {
+            dialog.bullet[index].sprite = Sprite(dialog.bullet_image);
+            dialog.bullet[index].x = dialog.entry.x + index * dialog.bullet_image.GetWidth();
+            dialog.bullet[index].y = dialog.entry.y + dialog.entry.image.GetHeight() / 2 - dialog.bullet_image.GetHeight() / 2;
+            dialog.bullet[index].z = dialog.entry.z + 1;
+            dialog.bullet[index].sprite.SetPosition(dialog.bullet[index].x, dialog.bullet[index].y, dialog.bullet[index].z);
+        }
+        if (index < bullets)
+            dialog.bullet[index].sprite.SetOpacity(1);
+        else
+            dialog.bullet[index].sprite.SetOpacity(0);
+    }
+}
+
+fun progress_callback(duration, prog) {
+    progress_opacity(1);
+    return;
+    if (!progress_bar.image || progress_bar.image.GetWidth () != Math.Int (progress_bar.original_image.GetWidth () * prog)) {
+        progress_bar.image = progress_bar.original_image.Scale(
+            progress_bar.original_image.GetWidth() * prog,
+            progress_bar.original_image.GetHeight()
+          );
+        progress_bar.sprite.SetImage(progress_bar.image);
+    }
+}
+
+fun quit_callback() {
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);
+Plymouth.SetDisplayNormalFunction(display_normal_callback);
+Plymouth.SetDisplayPasswordFunction(display_password_callback);
+Plymouth.SetBootProgressFunction(progress_callback);
+Plymouth.SetQuitFunction(quit_callback);
