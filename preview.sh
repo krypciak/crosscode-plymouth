@@ -7,7 +7,7 @@ G='\033[1;32m'
 duration=$1
 
 if [ $# -ne 1 ]; then
-	duration=300
+	duration=100
 fi
 
 plymouthd --debug

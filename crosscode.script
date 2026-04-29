@@ -47,68 +47,53 @@ fun display_debug_on_progress(duration) {
 
 // dialog
 fun dialog_setup() {
-    local.box;
-    local.lock;
-    local.entry;
+    global.input_bg.image = 
+        Image("inputbg.png")
+        .Scale(Window.GetWidth(), Window.GetHeight());
+    input_bg.sprite = Sprite(input_bg.image);
+    input_bg.sprite.SetPosition(0, 0, 0);
 
-    box.image = Image("box.png");
-    lock.image = Image("lock.png");
-    entry.image = Image("entry.png");
-
-    box.sprite = Sprite(box.image);
-    lock.sprite = Sprite(lock.image);
-    entry.sprite = Sprite(entry.image);
-
-    box.x = Window.GetWidth()/2 - box.image.GetWidth()/2;
-    box.y = Window.GetHeight()/2 - box.image.GetHeight()/2;
-    box.z = 10000;
-
-    lock.x = box.x + box.image.GetWidth()/2 - (lock.image.GetWidth() + entry.image.GetWidth())/2;
-    lock.y = box.y + box.image.GetHeight()/2 - lock.image.GetHeight()/2;
-    lock.z = box.z + 1;
-
-    entry.x = lock.x + lock.image.GetWidth();
-    entry.y = box.y + box.image.GetHeight()/2 - entry.image.GetHeight()/2;
-    entry.z = box.z + 1;
-
-    box.sprite.SetPosition(box.x, box.y, box.z);
-    lock.sprite.SetPosition(lock.x, lock.y, lock.z);
-    entry.sprite.SetPosition(entry.x, entry.y, entry.z);
-
-    global.dialog.box = box;
-    global.dialog.lock = lock;
-    global.dialog.entry = entry;
-
-    global.dialog.bullet_image = Image("bullet.png");
+    if (Window.GetHeight() > 1200) {
+        // 2560x1400
+        global.bullet_image = Image("bullet6.png");
+        global.bullet_spacing = 6;
+    } else {
+        // 1920x1080
+        global.bullet_image = Image("bullet4.png");
+        global.bullet_spacing = 4;
+    }
 }
 fun dialog_opacity(opacity) {
-    if (!global.dialog) {
+    if (!global.bullet_image) {
         if (opacity == 0)
             return;
 
         dialog_setup();
     }
 
-    dialog.box.sprite.SetOpacity(opacity);
-    dialog.lock.sprite.SetOpacity(opacity);
-    dialog.entry.sprite.SetOpacity(opacity);
-    for (index = 0; dialog.bullet[index]; index++) {
-        dialog.bullet[index].sprite.SetOpacity(opacity);
+    input_bg.sprite.SetOpacity(opacity);
+    for (i = 0; global.bullets[i]; i++) {
+        global.bullets[i].SetOpacity(opacity);
     }
 }
-fun dialog_password_callback(prompt, bullets) {
-    for (index = 0; dialog.bullet[index] || index < bullets; index++) {
-        if (!dialog.bullet[index]) {
-            dialog.bullet[index].sprite = Sprite(dialog.bullet_image);
-            dialog.bullet[index].x = dialog.entry.x + index * dialog.bullet_image.GetWidth();
-            dialog.bullet[index].y = dialog.entry.y + dialog.entry.image.GetHeight() / 2 - dialog.bullet_image.GetHeight() / 2;
-            dialog.bullet[index].z = dialog.entry.z + 1;
-            dialog.bullet[index].sprite.SetPosition(dialog.bullet[index].x, dialog.bullet[index].y, dialog.bullet[index].z);
+fun dialog_password_callback(prompt, bulletCount) {
+    baseX = (641 / 1920)*Window.GetWidth();
+    baseY = (495 / 1080)*Window.GetHeight();
+    z = 1000;
+    bw = bullet_image.GetWidth() + bullet_spacing;
+    bh = bullet_image.GetHeight();
+    for (i = 0; (global.bullets[i] || i < bulletCount) && i < 23; i++) {
+        if (!global.bullets[i]) {
+            global.bullets[i] = Sprite(bullet_image);
+            x = baseX + i * bw;
+            y = baseY;
+            global.bullets[i].SetPosition(x, y, z);
         }
-        if (index < bullets)
-            dialog.bullet[index].sprite.SetOpacity(1);
-        else
-            dialog.bullet[index].sprite.SetOpacity(0);
+        if (i < bulletCount) {
+            global.bullets[i].SetOpacity(1);
+        } else {
+            global.bullets[i].SetOpacity(0);
+        }
     }
 }
 
@@ -265,10 +250,10 @@ fun display_normal_callback() {
     set_display_mode("normal");
     update_visibility();
 }
-fun display_password_callback(prompt, bullets) {
+fun display_password_callback(prompt, bulletCount) {
     set_display_mode("password");
     update_visibility();
-    dialog_password_callback(prompt, bullets);
+    dialog_password_callback(prompt, bulletCount);
 }
 fun progress_callback(duration, p) {
     prog = p;
