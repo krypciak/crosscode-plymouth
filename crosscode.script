@@ -9,6 +9,10 @@ animation_frame = 0;
 fps = 60;
 Plymouth.SetRefreshRate(fps);
 
+threshold = 0.005;
+prog = 0;
+bar2_threshold = 0.90;
+
 last_loading_tile_index = -1;
 
 // debug
@@ -182,7 +186,7 @@ fun progress_bar_on_progress(p) {
     newW1 = Math.Int(progress_bar1.original_image.GetWidth() * bar1_fill);
     newW2 = Math.Int(progress_bar2.original_image.GetWidth() * bar2_fill);
 
-    if (!progress_bar1.image || progress_bar1.image.GetWidth () != newW1) {
+    if (!progress_bar1.image || progress_bar1.image.GetWidth() != newW1) {
         progress_bar1.image = progress_bar1.original_image.Scale(
             newW1,
             progress_bar1.original_image.GetHeight()
@@ -190,7 +194,7 @@ fun progress_bar_on_progress(p) {
         progress_bar1.sprite.SetImage(progress_bar1.image);
     }
 
-    if (!progress_bar2.image || progress_bar2.image.GetWidth () != newW2) {
+    if (!progress_bar2.image || progress_bar2.image.GetWidth() != newW2) {
         progress_bar2.image = progress_bar2.original_image.Scale(
             newW2,
             progress_bar2.original_image.GetHeight()
@@ -234,19 +238,20 @@ fun loading_tile_opacity(opacity) {
         loading_tile_setup();
     }
 
-    loadingTile.SetOpacity(opacity);
+    loading_tile.SetOpacity(opacity);
 }
 
 fun update_visibility() {
     mode = Plymouth.GetMode();
     log("mode:" + mode);
     if (mode == "boot") {
-        if (display_mode == "password")
+        if (display_mode == "password") {
             dialog_opacity(1.0);
-        else
+            progress_bar_opacity(0.0);
+        } else {
             dialog_opacity(0.0);
-
-        progress_bar_opacity(1.0);
+            progress_bar_opacity(1.0);
+        }
         loading_tile_opacity(0.0);
     } else if (mode == "shutdown" || mode == "reboot") {
         dialog_opacity(0.0);
