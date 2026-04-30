@@ -82,8 +82,8 @@ fun dialog_opacity(opacity) {
     }
 }
 fun dialog_password_callback(prompt, bulletCount) {
-    baseX = (641 / 1920)*Window.GetWidth();
-    baseY = (495 / 1080)*Window.GetHeight();
+    baseX = Math.Int((641 / 1920)*Window.GetWidth());
+    baseY = Math.Int((495 / 1080)*Window.GetHeight());
     z = 1000;
     bw = bullet_image.GetWidth() + bullet_spacing;
     bh = bullet_image.GetHeight();
@@ -126,8 +126,8 @@ fun progress_bar_setup() {
     progress_bar1.sprite = Sprite();
     progress_bar2.sprite = Sprite();
 
-    x = Window.GetWidth()/2 - progress_box.image.GetWidth()/2;
-    y = Window.GetHeight()/2 - 4*5;
+    x = Math.Int(Window.GetWidth()/2 - progress_box.image.GetWidth()/2);
+    y = Math.Int(Window.GetHeight()/2 - 4*5);
     progress_box.x = x;
     progress_box.y = y;
 
@@ -205,9 +205,9 @@ fun loading_tile_setup() {
             .Scale(is*scale, is*scale);
     }
     global.loading_tile = Sprite();
-    loading_tile.SetX(Window.GetWidth() * (cw - 56)/cw);
-    loading_tile.SetY(Window.GetHeight() * (ch - 56)/ch);
-    loading_tile.SetZ(10000);
+    x = Math.Int(Window.GetWidth() * (cw - 56)/cw);
+    y = Math.Int(Window.GetHeight() * (ch - 56)/ch);
+    loading_tile.SetPosition(x, y, 100000);
 
 }
 fun update_loading_tile() {
