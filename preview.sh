@@ -1,4 +1,6 @@
 #!/bin/bash
+# this will work only on X11!
+
 R='\033[1;31m'
 B='\033[1;34m'
 G='\033[1;32m'
