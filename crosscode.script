@@ -16,10 +16,13 @@ bar2_threshold = 0.90;
 last_loading_tile_index = -1;
 
 // debug
+enable_debug = false;
 bootprogressmsg.sprite = Sprite();
 bootlogmsg.sprite = Sprite();
 logstr = "";
 fun log(str) {
+    if (!enable_debug)
+        return;
     logstr += str + ",";
 
     progress.image1 = Image.Text(
@@ -35,6 +38,8 @@ fun log(str) {
     }
 }
 fun display_debug_on_progress(duration) {
+    if (!enable_debug)
+        return;
     progress.image = Image.Text(
         "Time: " + duration + "\n" +
         "Progress: " + prog + "\n",

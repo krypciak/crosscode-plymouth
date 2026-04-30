@@ -11,4 +11,7 @@ check_root
 
 cp -r /home/krypek/Temp/crosscode/ /usr/share/plymouth/themes/ 
 plymouth-set-default-theme -R crosscode 
-sh preview.sh
+
+if [ "${1-}" != '' ]; then
+  sh preview.sh
+fi
