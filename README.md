@@ -1,7 +1,15 @@
-# CrossCode plymouth
-[CrossCode](https://cross-code.com) themed plymouth theme
+# [CrossCode](https://cross-code.com) inspired Plymouth theme themed plymouth theme
 
-SCREENSHOT
+Recording of the boot process with [crossgrub](https://github.com/krypciak/crossgrub) grub theme installed and LUKS2+LVM setup: 
+
+https://github.com/user-attachments/assets/1531b56d-1a2f-4b32-86ec-822f85bf2744
+
+The theme consists of:
+- Boot progress bar
+- Disk decryption password input menu
+- Shutdown/reboot screen
+
+NOTE: The wallpaper shown in the recording is not part of the theme, you can find it [here](https://github.com/krypciak/dotfiles/blob/main/user/.config/wallpapers/crosscode-circuits.png)
 
 ## Installation
 
@@ -22,7 +30,7 @@ mkinitcpio -P
 
 ### Kernel parameters
 
-You have to add the `quiet splash` parameters, the other flags are my recommendations for a more flicker-free experience.  
+You have to add the `quiet splash` parameters, the other flags are recommended for a more flicker-free experience.  
 For example with GRUB:  
 `/etc/default/grub`:  
 ```
@@ -48,11 +56,11 @@ sudo bash ./install.sh
 
 - Done!
 
-- If you want, you can preview the theme (works only on X11, doesn't work through xwayland):
+- If you want, you can preview the theme (works only on X11; does not work through XWayland):
 ```
 sudo bash ./preview.sh
 ```
 
-
-
 ## Screenshots
+
+
