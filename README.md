@@ -1,4 +1,4 @@
-# [CrossCode](https://cross-code.com) inspired Plymouth theme themed plymouth theme
+# [CrossCode](https://cross-code.com)-inspired Plymouth theme
 
 Recording of the boot process with [crossgrub](https://github.com/krypciak/crossgrub) grub theme installed and LUKS2+LVM setup: 
 
