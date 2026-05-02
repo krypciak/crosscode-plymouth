@@ -60,7 +60,3 @@ sudo bash ./install.sh
 ```
 sudo bash ./preview.sh
 ```
-
-## Screenshots
-
-
