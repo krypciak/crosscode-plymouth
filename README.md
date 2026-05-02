@@ -60,3 +60,10 @@ sudo bash ./install.sh
 ```
 sudo bash ./preview.sh
 ```
+
+# Screenshots
+
+<img width="1920" height="1080" alt="boot progress bar" src="https://github.com/user-attachments/assets/2a729aa9-a52e-462f-a566-ff4100e8ef41" />
+<img width="1920" height="1080" alt="password menu" src="https://github.com/user-attachments/assets/451e0883-6ac0-4044-b71b-65ddf04be1e5" />
+<img width="1920" height="1080" alt="shutdown screen" src="https://github.com/user-attachments/assets/f86b3595-da59-416f-bb57-6d245d5d6e15" />
+
