@@ -57,16 +57,6 @@ fun dialog_setup() {
         .Scale(Window.GetWidth(), Window.GetHeight());
     input_bg.sprite = Sprite(input_bg.image);
     input_bg.sprite.SetPosition(0, 0, 0);
-
-    if (Window.GetHeight() > 1200) {
-        // 2560x1400
-        global.bullet_image = Image("bullet6.png");
-        global.bullet_spacing = 6;
-    } else {
-        // 1920x1080
-        global.bullet_image = Image("bullet4.png");
-        global.bullet_spacing = 4;
-    }
 }
 fun dialog_opacity(opacity) {
     if (!global.bullet_image) {
@@ -119,8 +109,8 @@ fun progress_bar_setup() {
     h = 8 * 5;
 
     progress_box.image = Image("progress_box.png").Scale(w, h);
-    progress_bar1.original_image = Image("progress_bar1.png").Scale(w - 20, h - 20);
-    progress_bar2.original_image = Image("progress_bar2.png").Scale(w - 20, h - 20);
+    progress_bar1.original_image = Image("progress_bar1.png").Scale(w - global.bar_padding*2, h - 20);
+    progress_bar2.original_image = Image("progress_bar2.png").Scale(w - global.bar_padding*2, h - 20);
 
     progress_box.sprite = Sprite(progress_box.image);
     progress_bar1.sprite = Sprite();
@@ -131,7 +121,7 @@ fun progress_bar_setup() {
     progress_box.x = x;
     progress_box.y = y;
 
-    barx = x + 10;
+    barx = x + global.bar_padding;
     bary = y + 10;
     progress_bar1.x = barx;
     progress_bar1.y = bary;
@@ -271,6 +261,20 @@ fun refresh_callback() {
     update_loading_tile();
 }
 fun quit_callback() {
+}
+
+
+
+if (Window.GetHeight() > 1200) {
+    // 2560x1400
+    global.bullet_image = Image("bullet6.png");
+    global.bullet_spacing = 6;
+    global.bar_padding = 14;
+} else {
+    // 1920x1080
+    global.bullet_image = Image("bullet4.png");
+    global.bullet_spacing = 4;
+    global.bar_padding = 10;
 }
 
 update_visibility();
