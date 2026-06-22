@@ -11,7 +11,7 @@ Plymouth.SetRefreshRate(fps);
 
 threshold = 0.005;
 prog = 0;
-bar2_threshold = 0.90;
+bar2_threshold = 0.80;
 
 last_loading_tile_index = -1;
 
