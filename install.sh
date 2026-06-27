@@ -17,6 +17,8 @@ echo "copying theme to $target_dir"
 rm -rf "$target_dir"
 cp -r "$DIR" "$target_dir"
 
+plymouth-set-default-theme crosscode
+
 if [ "${1-}" = 'preview' ]; then
   plymouth-set-default-theme -R crosscode
   bash "$DIR"/preview.sh
