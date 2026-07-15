@@ -4,6 +4,7 @@ fps = 60;
 
 threshold = 0.005;
 prog = 0;
+prog_start = -1;
 bar2_threshold = 0.80;
 
 bullets = [];
@@ -39,13 +40,13 @@ if (enable_debug) {
 fun log(str) {
     if (!enable_debug)
         return;
-    
+
     log_str += str + ",";
 
     debug_log_text.image = Image.Text(log_str, 1, 1, 1, 1, "droidsansmono", "left");
     debug_log_text.sprite.SetImage(debug_log_text.image);
 
-    if (log_str.Length() > 200) {
+    if (log_str.Length() > 130) {
         log_str = "";
     }
 }
@@ -53,7 +54,11 @@ fun display_debug_on_progress(duration) {
     if (!enable_debug)
         return;
 
-    debug_boot_progress_text.image = Image.Text("Time: " + duration + "\n" + "Progress: " + prog + "\n", 1, 1, 1, 1, "droidsansmono", "left");
+    debug_boot_progress_text.image = Image.Text(
+           "Time: " + duration + "\n" +
+           "Progress: " + prog + "\n" +
+           "Actual Progress: " + get_actual_prog() + "\n",
+            1, 1, 1, 1, "droidsansmono", "left");
     debug_boot_progress_text.sprite.SetImage(debug_boot_progress_text.image);
 }
 
@@ -105,15 +110,22 @@ fun dialog_password_callback(prompt, bulletCount) {
 }
 
 // progress bar
+fun get_actual_prog() {
+    if (prog_start == -1)
+        return prog;
+    if (prog_start == 0)
+        return 0;
+    return (prog - prog_start) / (1 - prog_start);
+}
 fun get_bar1_prog() {
-    if (prog >= bar2_threshold)
+    if (get_actual_prog() >= bar2_threshold)
         return 1;
-    return prog / bar2_threshold;
+    return get_actual_prog() / bar2_threshold;
 }
 fun get_bar2_prog() {
-    if (prog < bar2_threshold)
+    if (get_actual_prog() < bar2_threshold)
         return 0;
-    return (prog - bar2_threshold) / (1.0 - bar2_threshold);
+    return (get_actual_prog() - bar2_threshold) / (1.0 - bar2_threshold);
 }
 
 fun progress_bar_setup() {
@@ -146,7 +158,7 @@ fun progress_bar_setup() {
 }
 fun progress_bar_opacity(opacity) {
     if (!progress_box.image) {
-        if (opacity == 0 || prog < threshold)
+        if (opacity == 0 || get_actual_prog() < threshold)
             return;
 
         progress_bar_setup();
@@ -162,7 +174,7 @@ fun progress_bar_opacity(opacity) {
 }
 
 fun progress_bar_on_progress(p) {
-    if (prog < threshold || Plymouth.GetMode() != "boot") {
+    if (get_actual_prog() < threshold || Plymouth.GetMode() != "boot") {
         progress_bar_opacity(0.0);
         return;
     }
@@ -249,10 +261,16 @@ fun update_visibility() {
 // callbacks
 fun display_normal_callback() {
     set_display_mode("normal");
+
+    if (prog_start == 0) {
+        prog_start = prog;
+    }
     update_visibility();
 }
 fun display_password_callback(prompt, bulletCount) {
     set_display_mode("password");
+
+    prog_start = 0;
     update_visibility();
     dialog_password_callback(prompt, bulletCount);
 }
