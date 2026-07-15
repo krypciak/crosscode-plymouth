@@ -1,65 +1,77 @@
 display_mode = "normal";
-fun set_display_mode(new_mode) {
-    if (display_mode != new_mode) {
-        display_mode = new_mode;
-        log("display_mode:"+display_mode);
-    }
-}
 animation_frame = 0;
 fps = 60;
-Plymouth.SetRefreshRate(fps);
 
 threshold = 0.005;
 prog = 0;
 bar2_threshold = 0.80;
 
+bullets = [];
+loading_tiles = [];
 last_loading_tile_index = -1;
 
+if (Window.GetHeight() > 1200) {
+    // 2560x1400
+    bullet_image = Image("bullet6.png");
+    bullet_spacing = 6;
+    bar_padding = 14;
+} else {
+    // 1920x1080
+    bullet_image = Image("bullet4.png");
+    bullet_spacing = 4;
+    bar_padding = 10;
+}
+
 // debug
-enable_debug = false;
-bootprogressmsg.sprite = Sprite();
-bootlogmsg.sprite = Sprite();
-logstr = "";
+enable_debug = 0;
+log_str = "";
+
+if (enable_debug) {
+    debug_log_text.sprite = Sprite();
+    debug_log_text.sprite.SetPosition(10, 10, 10000);
+    debug_log_text.sprite.SetOpacity(1.0);
+
+    debug_boot_progress_text.sprite = Sprite();
+    debug_boot_progress_text.sprite.SetPosition(10, 100, 10000);
+    debug_boot_progress_text.sprite.SetOpacity(1.0);
+}
+
 fun log(str) {
     if (!enable_debug)
         return;
-    logstr += str + ",";
+    
+    log_str += str + ",";
 
-    progress.image1 = Image.Text(
-        "Log: " + logstr,
-        1, 1, 1, 1, "droidsansmono", "left");
-    bootlogmsg.sprite.SetImage(progress.image1);
-    bootlogmsg.sprite.SetX(10);
-    bootlogmsg.sprite.SetY(10);
-    bootlogmsg.sprite.SetOpacity(1.0);
+    debug_log_text.image = Image.Text(log_str, 1, 1, 1, 1, "droidsansmono", "left");
+    debug_log_text.sprite.SetImage(debug_log_text.image);
 
-    if (logstr.Length() > 200) {
-        logstr = "";
+    if (log_str.Length() > 200) {
+        log_str = "";
     }
 }
 fun display_debug_on_progress(duration) {
     if (!enable_debug)
         return;
-    progress.image = Image.Text(
-        "Time: " + duration + "\n" +
-        "Progress: " + prog + "\n",
-        1, 1, 1, 1, "droidsansmono", "left");
-    bootprogressmsg.sprite.SetImage(progress.image);
-    bootprogressmsg.sprite.SetX(10);
-    bootprogressmsg.sprite.SetY(100);
-    bootprogressmsg.sprite.SetOpacity(1.0);
+
+    debug_boot_progress_text.image = Image.Text("Time: " + duration + "\n" + "Progress: " + prog + "\n", 1, 1, 1, 1, "droidsansmono", "left");
+    debug_boot_progress_text.sprite.SetImage(debug_boot_progress_text.image);
+}
+
+fun set_display_mode(new_mode) {
+    if (display_mode != new_mode) {
+        display_mode = new_mode;
+        log("display_mode:" + display_mode);
+    }
 }
 
 // dialog
 fun dialog_setup() {
-    global.input_bg.image = 
-        Image("inputbg.png")
-        .Scale(Window.GetWidth(), Window.GetHeight());
+    global.input_bg.image = Image("inputbg.png").Scale(Window.GetWidth(), Window.GetHeight());
     input_bg.sprite = Sprite(input_bg.image);
     input_bg.sprite.SetPosition(0, 0, 0);
 }
 fun dialog_opacity(opacity) {
-    if (!global.bullet_image) {
+    if (!input_bg.image) {
         if (opacity == 0)
             return;
 
@@ -67,27 +79,27 @@ fun dialog_opacity(opacity) {
     }
 
     input_bg.sprite.SetOpacity(opacity);
-    for (i = 0; global.bullets[i]; i++) {
-        global.bullets[i].SetOpacity(opacity);
+    for (i = 0; bullets[i]; i++) {
+        bullets[i].SetOpacity(opacity);
     }
 }
 fun dialog_password_callback(prompt, bulletCount) {
-    baseX = Math.Int((641 / 1920)*Window.GetWidth());
-    baseY = Math.Int((495 / 1080)*Window.GetHeight());
+    base_x = Math.Int((641 / 1920) * Window.GetWidth());
+    base_y = Math.Int((495 / 1080) * Window.GetHeight());
     z = 1000;
     bw = bullet_image.GetWidth() + bullet_spacing;
     bh = bullet_image.GetHeight();
-    for (i = 0; (global.bullets[i] || i < bulletCount) && i < 23; i++) {
-        if (!global.bullets[i]) {
-            global.bullets[i] = Sprite(bullet_image);
-            x = baseX + i * bw;
-            y = baseY;
-            global.bullets[i].SetPosition(x, y, z);
+    for (i = 0; (bullets[i] || i < bulletCount) && i < 23; i++) {
+        if (!bullets[i]) {
+            bullets[i] = Sprite(bullet_image);
+            x = base_x + i * bw;
+            y = base_y;
+            bullets[i].SetPosition(x, y, z);
         }
         if (i < bulletCount) {
-            global.bullets[i].SetOpacity(1);
+            bullets[i].SetOpacity(1);
         } else {
-            global.bullets[i].SetOpacity(0);
+            bullets[i].SetOpacity(0);
         }
     }
 }
@@ -108,9 +120,9 @@ fun progress_bar_setup() {
     w = Window.GetWidth() * 0.6;
     h = 8 * 5;
 
-    progress_box.image = Image("progress_box.png").Scale(w, h);
-    progress_bar1.original_image = Image("progress_bar1.png").Scale(w - global.bar_padding*2, h - 20);
-    progress_bar2.original_image = Image("progress_bar2.png").Scale(w - global.bar_padding*2, h - 20);
+    global.progress_box.image = Image("progress_box.png").Scale(w, h);
+    global.progress_bar1.original_image = Image("progress_bar1.png").Scale(w - bar_padding*2, h - 20);
+    global.progress_bar2.original_image = Image("progress_bar2.png").Scale(w - bar_padding*2, h - 20);
 
     progress_box.sprite = Sprite(progress_box.image);
     progress_bar1.sprite = Sprite();
@@ -121,7 +133,7 @@ fun progress_bar_setup() {
     progress_box.x = x;
     progress_box.y = y;
 
-    barx = x + global.bar_padding;
+    barx = x + bar_padding;
     bary = y + 10;
     progress_bar1.x = barx;
     progress_bar1.y = bary;
@@ -129,15 +141,11 @@ fun progress_bar_setup() {
     progress_bar2.y = bary;
 
     progress_box.sprite.SetPosition(x, y, 0);
-    progress_bar1.sprite.SetPosition(barx, bary);
-    progress_bar2.sprite.SetPosition(barx, bary);
-
-    global.progress_box = progress_box;
-    global.progress_bar1 = progress_bar1;
-    global.progress_bar2 = progress_bar2;
+    progress_bar1.sprite.SetPosition(barx, bary, 10);
+    progress_bar2.sprite.SetPosition(barx, bary, 10);
 }
 fun progress_bar_opacity(opacity) {
-    if (!global.progress_box) {
+    if (!progress_box.image) {
         if (opacity == 0 || prog < threshold)
             return;
 
@@ -190,9 +198,7 @@ fun loading_tile_setup() {
     is = 48;
     scale = Window.GetWidth() / cw;
     for (i = 0; i < 16; i++) {
-        global.loading_tiles[i] =
-            Image("loadingTiles/loadingTile" + i + ".png")
-            .Scale(is*scale, is*scale);
+        loading_tiles[i] = Image("loadingTiles/loadingTile" + i + ".png").Scale(is*scale, is*scale);
     }
     global.loading_tile = Sprite();
     x = Math.Int(Window.GetWidth() * (cw - 56)/cw);
@@ -201,17 +207,17 @@ fun loading_tile_setup() {
 
 }
 fun update_loading_tile() {
-    if (!global.loading_tile) 
+    if (!loading_tile) 
         return;
 
     index = Math.Int(animation_frame / fps / 0.05) % 16;
     if (last_loading_tile_index != index) {
         last_loading_tile_index = index;
-        loading_tile.SetImage(loading_tiles[index]);
+        global.loading_tile.SetImage(loading_tiles[index]);
     }
 }
 fun loading_tile_opacity(opacity) {
-    if (!global.loading_tile) {
+    if (!loading_tile) {
         if (opacity == 0)
             return;
 
@@ -263,20 +269,7 @@ fun refresh_callback() {
 fun quit_callback() {
 }
 
-
-
-if (Window.GetHeight() > 1200) {
-    // 2560x1400
-    global.bullet_image = Image("bullet6.png");
-    global.bullet_spacing = 6;
-    global.bar_padding = 14;
-} else {
-    // 1920x1080
-    global.bullet_image = Image("bullet4.png");
-    global.bullet_spacing = 4;
-    global.bar_padding = 10;
-}
-
+Plymouth.SetRefreshRate(fps);
 update_visibility();
 Plymouth.SetDisplayNormalFunction(display_normal_callback);
 Plymouth.SetDisplayPasswordFunction(display_password_callback);
